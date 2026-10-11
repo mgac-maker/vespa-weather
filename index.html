@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07131c"><meta name="description" content="Vespa Weather — decyzja Vespa czy samochód na podstawie prognozy dla Krakowa.">
+<meta name="theme-color" content="#07131c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Vespa Weather"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="apple-touch-icon.png"><meta name="description" content="Vespa Weather — decyzja Vespa czy samochód na podstawie prognozy dla Krakowa.">
 <title>Vespa Weather · Kraków</title>
 <link rel="manifest" href="manifest.json">
 <style>
@@ -21,7 +21,7 @@ main{width:min(100%,520px);margin:auto;padding:20px 16px 40px}.top{display:flex;
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important}}
 </style></head>
 <body><main>
-<header class="top"><div class="brand"><div class="logo">🛵</div><div><div class="eyebrow">TWOJE CODZIENNE DECYZJE</div><h1>Vespa Weather</h1><div class="city">Kraków · prognoza na jutro</div></div></div><button class="iconbtn" id="toggleSettings" aria-label="Otwórz ustawienia" aria-expanded="false">⚙ <span style="font-size:13px;vertical-align:2px">Ustawienia</span></button></header>
+<header class="top"><div class="brand"><div class="logo">🛵</div><div><h1>Vespa Weather</h1><div class="city">Kraków · prognoza na jutro</div></div></div><button class="iconbtn" id="toggleSettings" aria-label="Otwórz ustawienia" aria-expanded="false">⚙ <span style="font-size:13px;vertical-align:2px">Ustawienia</span></button></header>
 <section class="card hero"><div class="date" id="dateLabel">PROGNOZA NA JUTRO</div><div class="herohead"><div><h2 id="verdict">Sprawdzam pogodę…</h2><p class="sub" id="reason">Pobieram najnowsze dane pogodowe.</p></div><div class="score"><strong id="score">—</strong><span>komfort jazdy</span></div></div>
 <div class="scene" id="scene"><div class="sun"></div><div class="cloud" id="cloud">⛅</div><div class="road"></div><div class="scooter" id="scooter" role="img" aria-label="Biała Vespa">🛵</div><div class="tarp" aria-label="Biała Vespa przykryta plandeką"></div><div class="rainlines"></div></div>
 <div class="times"><div class="timecard"><div class="timehead">☀️ Do pracy</div><div class="timehours" id="morningHours">07:00–08:00</div><div class="weatherline"><span class="wxicon" id="morningIcon">🌤️</span><span class="temp" id="morningTemp">—°</span></div><div class="metrics"><span class="drop" id="morningRain">💧 —%</span><span id="morningWind">〰 — km/h</span></div><div class="bar"><i id="morningBar" style="width:0%"></i></div></div>
@@ -59,7 +59,7 @@ function around(center,len){let a=[];for(let i=Math.max(0,center-1);i<=Math.min(
 function putWindow(prefix,data,inds){const temp=Math.round(avg(data.temperature_2m,inds));const rain=Math.round(Math.max(...inds.map(i=>data.precipitation_probability[i]||0)));const wind=Math.round(Math.max(...inds.map(i=>data.wind_speed_10m[i]||0)));const gust=Math.round(Math.max(...inds.map(i=>data.wind_gusts_10m[i]||0)));const code=data.weather_code[inds[1]??inds[0]];const [ico]=wx(code);$(prefix+"Icon").textContent=ico;$(prefix+"Temp").textContent=`${temp}°C`;$(prefix+"Rain").textContent=`💧 ${rain}%`;$(prefix+"Wind").textContent=`〰 ${wind} km/h`;$(prefix+"Bar").style.width=`${rain}%`;$(prefix+"Bar").className=rain>=45||gust>=45?"high":"";return {temp,rain,wind,gust,code}}
 async function loadWeather(){document.body.classList.add("loading");$("status").textContent="Pobieram prognozę…";$("verdict").textContent="Sprawdzam pogodę…";try{
 const url="https://api.open-meteo.com/v1/forecast?latitude=50.0647&longitude=19.9450&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&forecast_days=3&timezone=Europe%2FWarsaw";
-const res=await fetch(url);if(!res.ok)throw Error("Serwis pogodowy zwrócił błąd");const data=await res.json();const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);const date=localDate(tomorrow);$("dateLabel").textContent=tomorrow.toLocaleDateString("pl-PL",{weekday:"long",day:"numeric",month:"long"}).toUpperCase();
+const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let res;try{res=await fetch(url,{signal:controller.signal});}finally{clearTimeout(timeout)}if(!res.ok)throw Error("Serwis pogodowy zwrócił błąd");const data=await res.json();const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);const date=localDate(tomorrow);$("dateLabel").textContent=tomorrow.toLocaleDateString("pl-PL",{weekday:"long",day:"numeric",month:"long"}).toUpperCase();
 $("morningHours").textContent=windowRange(settings.depart);$("eveningHours").textContent=windowRange(settings.back);
 const mi=idxNear(data.hourly.time,date,settings.depart),ei=idxNear(data.hourly.time,date,settings.back);const m=putWindow("morning",data.hourly,around(mi,data.hourly.time.length)),e=putWindow("evening",data.hourly,around(ei,data.hourly.time.length));
 const maxRain=Math.max(m.rain,e.rain),maxGust=Math.max(m.gust,e.gust),minTemp=Math.min(m.temp,e.temp),maxWind=Math.max(m.wind,e.wind);
@@ -69,9 +69,9 @@ const car=unsafe||maxRain>=60||maxGust>=45||score<43;const caution=!car&&(maxRai
 $("score").textContent=score+"/100";$("verdict").textContent=car?"Lepiej samochodem":caution?"Vespa warunkowo":"Jedź Vespą!";$("verdict").style.color=car?"var(--red)":caution?"var(--gold)":"var(--green)";
 $("reason").textContent=unsafe?"Niekorzystne warunki — bezpieczeństwo przede wszystkim.":car?"Opady lub wiatr mogą utrudnić jazdę.":caution?"Sprawdź prognozę tuż przed wyjazdem.":"Warunki wyglądają obiecująco.";
 $("scene").classList.toggle("rain",car);$("cloud").textContent=car?"🌧️":"⛅";$("rainTile").textContent=`${maxRain}%`; $("rainNote").textContent=maxRain>=45?"podwyższone ryzyko":"najwyższa szansa w trasie";$("windTile").textContent=`${maxWind}/${maxGust}`;$("tempTile").textContent=`${m.temp}° / ${e.temp}°C`;
-const hours=data.hourly.time.map((t,i)=>({t,i})).filter(x=>x.t.startsWith(date)&&Number(x.t.slice(11,13))>=6&&Number(x.t.slice(11,13))<=20&&Number(x.t.slice(14,16))==="00");
+const hours=data.hourly.time.map((t,i)=>({t,i})).filter(x=>x.t.startsWith(date)&&Number(x.t.slice(11,13))>=6&&Number(x.t.slice(11,13))<=20&&x.t.slice(14,16)==="00");
 $("hourGrid").innerHTML=hours.filter((_,i)=>i%2===0).map(({t,i})=>{const [ico]=wx(data.hourly.weather_code[i]);return `<div class="hour">${t.slice(11,16)}<span class="hi">${ico}</span><b>${Math.round(data.hourly.temperature_2m[i])}°</b><small>💧 ${data.hourly.precipitation_probability[i]??0}%</small></div>`}).join("");
 $("updated").textContent="Aktualizacja: "+new Date().toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});$("status").textContent="Dane Open-Meteo · Kraków · odświeżone teraz";
-}catch(err){$("verdict").textContent="Nie udało się pobrać";$("reason").textContent="Sprawdź połączenie i spróbuj ponownie."; $("status").textContent="Błąd prognozy: "+err.message}finally{document.body.classList.remove("loading")}}
+}catch(err){$("verdict").textContent="Nie udało się pobrać";$("reason").textContent="Sprawdź połączenie i spróbuj ponownie."; $("hourGrid").innerHTML=`<div class="hour" style="grid-column:1/-1">Brak prognozy godzinowej. Sprawdź połączenie i odśwież aplikację.</div>`; $("status").textContent="Błąd prognozy: "+(err.name==="AbortError"?"przekroczono czas oczekiwania":err.message)}finally{document.body.classList.remove("loading")}}
 loadWeather();
 </script></body></html>

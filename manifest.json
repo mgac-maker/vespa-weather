@@ -1,9 +1,16 @@
 {
-  "name": "Vespa Weather Kraków",
-  "short_name": "Vespa Weather",
-  "start_url": "./",
+  "name": "Vespa Weather",
+  "short_name": "Vespa",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#061119",
   "theme_color": "#07131c",
-  "description": "Prognoza i rekomendacja: Vespa czy samochód."
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

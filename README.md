@@ -1,16 +1,21 @@
-# Vespa Weather Kraków
+# Vespa Weather — komplet do GitHub Pages
 
-Prosty prototyp aplikacji webowej/PWA do oceny, czy jutro dojechać do pracy Vespą czy samochodem.
+## Pliki
+- `index.html` — aplikacja z poprawką prognozy godzinowej, bez napisu „TWOJE CODZIENNE DECYZJE”, z obsługą błędów pobierania pogody.
+- `apple-touch-icon.png` — ikona przygotowana z grafiki przesłanej przez użytkownika (512×512).
+- `manifest.json` — metadane aplikacji.
+- `README.md` — ta instrukcja.
 
-## Uruchomienie lokalne
-Otwórz `index.html` w przeglądarce z dostępem do internetu. Dane pogodowe pobierane są z Open-Meteo.
+## Wgranie na GitHub
+1. Rozpakuj ZIP.
+2. Otwórz repozytorium aplikacji na GitHub.
+3. Wybierz **Add file → Upload files**.
+4. Przeciągnij wszystkie cztery pliki z rozpakowanego folderu do katalogu głównego repozytorium (nie sam folder).
+5. Zatwierdź przez **Commit changes**.
+6. Wejdź w **Settings → Pages** i sprawdź, czy publikowanie jest ustawione z gałęzi `main` i katalogu `/ (root)`.
+7. Po publikacji otwórz stronę aplikacji w Safari na iPhonie i wybierz **Udostępnij → Dodaj do ekranu początkowego**.
 
-## Publikacja na GitHub Pages
-1. Utwórz nowe repozytorium na GitHubie, np. `vespa-weather`.
-2. Wgraj `index.html`, `manifest.json` i `README.md` do katalogu głównego.
-3. W repozytorium wybierz **Settings → Pages**.
-4. W sekcji Build and deployment wybierz **Deploy from a branch**, branch `main`, folder `/ (root)` i zapisz.
-5. Po chwili aplikacja będzie dostępna pod adresem `https://TWOJ_LOGIN.github.io/vespa-weather/`.
+Jeśli skrót Vespa Weather był już dodany do ekranu początkowego, usuń stary i dodaj ponownie, aby odświeżyć ikonę. Jeśli Safari nadal pokazuje starą ikonę, odczekaj chwilę i spróbuj ponownie.
 
 ## Uwaga
-To prototyp hobbystyczny. Werdykt jest heurystyką, nie gwarancją bezpieczeństwa. Zawsze sprawdzaj aktualne warunki, ostrzeżenia i sytuację na drodze. Open-Meteo API: https://open-meteo.com/
+Prognoza wymaga dostępu do internetu i odpowiedzi z używanego źródła pogody. Wersja ma komunikat błędu zamiast nieskończonego ładowania; nie mogę zagwarantować dostępności zewnętrznego API w każdej sieci.
